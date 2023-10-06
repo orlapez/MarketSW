@@ -15,7 +15,9 @@ namespace Market.Shared.Entities
         [Display (Name="Pais")] // Son etiquetas del nombre del campo
        [MaxLength (100,ErrorMessage ="El campo {0} debe contener únicamente 100 caracteres")] // Es la longitud de caracteres del campo}
         [Required(ErrorMessage ="El campo {0} es obligatorio")]
-        public string? Name { get; set; }    // ?(indica que hace un salto de nulos)
+        public string Name { get; set; }    // ?(indica que hace un salto de nulos)
         
+
+        public ICollection<State> States { get; set;}
     }
 }
