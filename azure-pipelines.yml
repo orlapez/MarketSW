@@ -4,33 +4,37 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: 'windows-2022'
 
 variables:
   buildConfiguration: 'Release'
-  proyecto: 'Market/Market.API/Market.API.csproj'
+  proyecto: 'Market.API/Market.API.csproj'
 
 steps:
-- script: dotnet restore
-  displayName: 'dotnet restore'
-
-- script: dotnet build Market/Market.API/Market.API.csproj --configuration $(buildConfiguration)
+- task: UseDotNet@2
+  displayName: 'ASP.NET Core 7'
+  inputs:
+    packageType: 'sdk'
+    version: '7.0.403'
+    includePreviewVersions: true
+- script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet test $(buildConfiguration)'
+- task: CmdLine@2
+  displayName: 'Installing EF Core CLI'
   inputs:
-    command: test
-    projects: '**/*Tests/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish $(buildConfiguration)'
+    script: 'dotnet tool install --global dotnet-ef'
+- task: CmdLine@2
+  displayName: 'Generating DB script'
   inputs:
-    command: publish
-    publishWebProjects: True
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: True
-
+    script: 'dotnet ef migrations script -i -o $(Build.ArtifactStagingDirectory)\migrate.sql --project $(proyecto)'
+- task: DotNetCoreCLI@2
+  displayName: 'Publishing App...'
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: $(proyecto)
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --runtime win-x64 --self-contained'
+    zipAfterPublish: false
+    modifyOutputPath: false
 - task: PublishBuildArtifacts@1
-  displayName: 'publish artifacts'
+  displayName: 'Publicando los artefactos'
