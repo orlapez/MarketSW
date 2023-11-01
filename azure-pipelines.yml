@@ -15,9 +15,9 @@ steps:
   displayName: 'ASP.NET Core 7'
   inputs:
     packageType: 'sdk'
-    version: '7.0.403'
+    version: '7.0.13'
     includePreviewVersions: true
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet build Market.API/Market.API.csproj --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 - task: CmdLine@2
   displayName: 'Installing EF Core CLI'
